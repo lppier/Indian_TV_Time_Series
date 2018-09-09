@@ -22,7 +22,7 @@ def find_more_than_10_percent(data):
 
 
 os.chdir('/Users/pierlim/PycharmProjects/IndianTV')
-df = pd.read_csv("./data/winter_test.csv")
+df = pd.read_csv("./data/simple_exp_test.csv")
 # df_train = df.dropna()
 find_more_than_10_percent(df)
 df = df.dropna()
