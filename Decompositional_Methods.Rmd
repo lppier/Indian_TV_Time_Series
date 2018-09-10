@@ -1,0 +1,71 @@
+---
+title: "Decompositional Methods for Indian TV Ratings"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r}
+library(ggplot2) 
+library(forecast)
+
+# Read CSV into R
+setwd("/Users/davidleonardi/Projects/Indian_TV_Time_Series")
+curDir <- getwd()
+```
+Load Data. 
+```{r}
+df <- read.csv(file="./data/ActualRatings_weeklyGRP.csv", header=TRUE, sep=",", stringsAsFactors=FALSE)
+
+# remove extra column
+df <- df[ , !(names(df) %in% c("X"))]
+
+# convert string date to R POSIXct format
+df$GRPRatingsDate <- as.POSIXct(as.Date(sapply(df$GRPRatingsDate, function(x) strsplit(x, " ")[[1]][1]), "%d-%B-%Y"))
+```
+Plot Data.
+```{r}
+ggplot(data=df, aes(x=GRPRatingsDate, y=GRP)) +
+  geom_line()+
+  geom_point()+
+  labs(title="Weekly Ratings 2007 - 2009", y="GRP", x="GRP Ratings Date")
+```
+
+Split data to training and testing data.
+
+```{r}
+df_train <- df[which(df$GRPRatingsDate <= "2008-10-26"),]
+df_test <- df[which(df$GRPRatingsDate > "2008-10-26"),]
+
+head(df_train, 5)
+head(df_test, 5)
+```
+
+### Decompose the data
+#### Using decompose method
+
+```{r}
+timeseries_train = df_train$GRP
+
+ts_train = ts(timeseries_train, frequency = 12)
+
+decompose_train_additive = decompose(ts_train, "additive")
+plot(decompose_train_additive)
+
+decompose_train_multiplicative = decompose(ts_train, "multiplicative")
+plot(decompose_train_multiplicative)
+```
+
+#### Using STL
+
+```{r}
+stl_train = stl(ts_train, "periodic")
+seasonal_stl_train <- stl_train$time.series[,1]
+trend_stl_train <- stl_train$time.series[,2]
+random_stl_train <- stl_train$time.series[,3]
+
+plot(as.ts(seasonal_stl_train))
+plot(trend_stl_train)
+plot(random_stl_train)
+plot(stl_train)
+```
