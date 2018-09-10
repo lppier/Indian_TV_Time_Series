@@ -49,7 +49,7 @@ head(df_test, 5)
 #### Using decompose method
 
 ```{r}
-timeseries_train = df_train$GRP
+timeseries_train = `^`(df_train$GRP, 0.7)
 
 ts_train = ts(timeseries_train, frequency = 12)
 
@@ -81,26 +81,81 @@ plot(random_stl_train)
 ```
 
 ```{r}
-plot(stl_train)
+plot(stl_train, main="Seasonal Decomposition of Time Series by Loess (STL)")
 ```
 
 ```{r}
-forecast_stl <- forecast(stl_train, h=21, allow.multiplicative.trend = TRUE)
-plot(forecast_stl)
+ts_train_actual <- ts(df_train$GRP, frequency = 12)
+ts_train_predicted <- ts(`^`(stl_train$time.series[,1]+stl_train$time.series[,2], 1/0.7), frequency = 12)
 ```
 
 ```{r}
 forecast_stl <- forecast(stl_train, h=21)
 plot(forecast_stl)
 ```
-
 ```{r}
-ts_actual <- ts(df_test$GRP, frequency = 12)
-ts_predicted <- ts(forecast_stl$mean, frequency = 12)
 unclass(forecast_stl)
 ```
 
 ```{r}
-mape <- Reduce(`+`, unclass(abs((ts_actual-ts_predicted)/ts_actual) * 100)) / length(ts_actual)
-print(mape)
+ts_test_actual <- ts(df_test$GRP, frequency = 12)
+ts_test_predicted <- ts(`^`(forecast_stl$mean, 1/0.7), frequency = 12)
+```
+
+```{r}
+train_mape <- Reduce(`+`, unclass(abs((ts_train_actual-ts_train_predicted)/ts_train_actual) * 100)) / length(ts_train_actual)
+cat("Train MAPE:",train_mape,"%")
+```
+
+```{r}
+train_mae <- Reduce(`+`, unclass(abs(ts_train_actual-ts_train_predicted))) / length(ts_train_actual)
+cat("Test MAE:",train_mae)
+```
+
+```{r}
+test_mape <- Reduce(`+`, unclass(abs((ts_test_actual-ts_test_predicted)/ts_test_actual) * 100)) / length(ts_test_actual)
+cat("Test MAPE:",test_mape,"%")
+```
+
+```{r}
+test_mae <- Reduce(`+`, unclass(abs(ts_test_actual-ts_test_predicted))) / length(ts_test_actual)
+cat("Test MAE:",test_mae)
+```
+
+
+
+```{r}
+new_df <- ts(df_train$GRP, start = c(2007,23), frequency = 52)
+new_df
+```
+
+```{r}
+decompose_df <- tslm(new_df ~ trend + fourier(new_df, 2))
+decompose_df
+```
+
+```{r}
+trend <- coef(decompose_df)[1] + coef(decompose_df)['trend'] * seq_along(new_df)
+
+components <- cbind(
+  time.series = cbind(
+    data = new_df,
+    seasonal = new_df - trend - residuals(decompose_df),
+    trend = trend,
+    remainder = residuals(decompose_df)
+  )
+)
+plot(components)
+```
+
+```{r}
+forecast_stl <- forecast(components, h=21)
+plot(forecast_stl)
+```
+```{r}
+stl_train
+```
+
+```{r}
+components
 ```
