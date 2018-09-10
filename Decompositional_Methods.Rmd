@@ -8,6 +8,7 @@ output:
 ```{r}
 library(ggplot2) 
 library(forecast)
+library(tis)
 
 # Read CSV into R
 setwd("/Users/davidleonardi/Projects/Indian_TV_Time_Series")
@@ -38,6 +39,9 @@ df_train <- df[which(df$GRPRatingsDate <= "2008-10-26"),]
 df_test <- df[which(df$GRPRatingsDate > "2008-10-26"),]
 
 head(df_train, 5)
+```
+
+```{r}
 head(df_test, 5)
 ```
 
@@ -51,7 +55,9 @@ ts_train = ts(timeseries_train, frequency = 12)
 
 decompose_train_additive = decompose(ts_train, "additive")
 plot(decompose_train_additive)
+```
 
+```{r}
 decompose_train_multiplicative = decompose(ts_train, "multiplicative")
 plot(decompose_train_multiplicative)
 ```
@@ -59,13 +65,42 @@ plot(decompose_train_multiplicative)
 #### Using STL
 
 ```{r}
-stl_train = stl(ts_train, "periodic")
+stl_train = stl(ts_train, s.window="periodic")
 seasonal_stl_train <- stl_train$time.series[,1]
 trend_stl_train <- stl_train$time.series[,2]
 random_stl_train <- stl_train$time.series[,3]
 
 plot(as.ts(seasonal_stl_train))
+```
+```{r}
 plot(trend_stl_train)
+```
+
+```{r}
 plot(random_stl_train)
+```
+
+```{r}
 plot(stl_train)
+```
+
+```{r}
+forecast_stl <- forecast(stl_train, h=21, allow.multiplicative.trend = TRUE)
+plot(forecast_stl)
+```
+
+```{r}
+forecast_stl <- forecast(stl_train, h=21)
+plot(forecast_stl)
+```
+
+```{r}
+ts_actual <- ts(df_test$GRP, frequency = 12)
+ts_predicted <- ts(forecast_stl$mean, frequency = 12)
+unclass(forecast_stl)
+```
+
+```{r}
+mape <- Reduce(`+`, unclass(abs((ts_actual-ts_predicted)/ts_actual) * 100)) / length(ts_actual)
+print(mape)
 ```
