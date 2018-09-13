@@ -7,13 +7,20 @@ The dataset is the actual GRP weekly metric from an Indian TV channel. A total o
 The following table summarises the variables in the data used for further processing, what they represent and their data type:
 
 1	**OptimusPrime_Unit7_AsnTS.pdf**	The report for the CA
+
 2	**train.csv, test.csv**	Training data – Data up to 26th Oct 2008, Test data – Data from Nov 2008 – 15 Mar 2009
+
 3	**TimeSeriesRegression.ipynb**	Exploratory analysis 
+
 4	**Arima.ipynb**	Running of auto-ARIMA to choose the best ARIMA values
-5	**Time Series.jmp**
-	This JMP file contains the analysis for the exponential smoothing and ARIMA modelling. 
+
+5	**Time Series.jmp** This JMP file contains the analysis for the exponential smoothing and ARIMA modelling. 
+
 6	**Regression_excel folder**	Contains the excel files for regression and dummy variable regression modelling 
+
 7	**Decompositional Methods.ipynb**	Additive and Multiplicative Decompositional Methods
+
 8	**Decompositional_Methods.Rmd**	STL Decompositional Method
+
 9	**Exponential_Smoothing_Try.ipynb**	Some visualizations for exponential smoothing
 
